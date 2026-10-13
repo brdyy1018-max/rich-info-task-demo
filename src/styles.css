@@ -149,7 +149,7 @@ textarea {
 .rail-defaults {
   flex: 0 0 auto;
   padding: 10px 8px 12px;
-  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -1227,6 +1227,17 @@ textarea {
   background: #e5e7eb;
 }
 
+button.thumb {
+  border: none;
+  padding: 0;
+  display: block;
+  cursor: default;
+}
+
+button.thumb.is-link {
+  cursor: pointer;
+}
+
 .thumb img,
 .thumb-video img {
   width: 100%;
@@ -1608,6 +1619,31 @@ textarea {
   cursor: pointer;
 }
 
+.guide-card {
+  display: flex;
+  flex-direction: column;
+  max-height: 78%;
+}
+
+.guide-frame {
+  width: 100%;
+  height: 280px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fff;
+  margin-bottom: 10px;
+}
+
+.guide-open {
+  display: block;
+  margin: 0 0 10px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--blue);
+  text-decoration: none;
+}
+
 .payload-card pre {
   max-height: 360px;
   overflow: auto;
@@ -1693,8 +1729,8 @@ textarea {
 
   .rail-defaults {
     flex: 0 0 168px;
-    border-top: none;
-    border-left: 1px solid var(--border);
+    border-bottom: none;
+    border-right: 1px solid var(--border);
     padding: 8px;
     overflow-y: auto;
   }
@@ -1722,6 +1758,13 @@ textarea {
   }
 
   .rail-head {
+    flex: 0 0 auto;
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .rail-defaults {
     flex: 0 0 auto;
     width: 100%;
     border-right: none;

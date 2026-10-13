@@ -35,8 +35,10 @@ export type Section = {
   available: boolean;
   helpText: string;
   helpEnabled: boolean;
+  helpLink: string;
   exampleEnabled: boolean;
   exampleLabel: string;
+  exampleLink: string;
   layout: LayoutKind;
   actions: CaptureAction[];
   minItems: number;

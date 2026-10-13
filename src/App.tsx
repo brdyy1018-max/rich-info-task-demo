@@ -26,8 +26,10 @@ function emptySection(partial: Partial<Section> & Pick<Section, "id" | "title">)
     available: true,
     helpEnabled: false,
     helpText: "",
+    helpLink: "",
     exampleEnabled: false,
     exampleLabel: "Ex.",
+    exampleLink: "",
     layout: "labeled_slots",
     actions: ["photo"],
     minItems: 1,
@@ -421,6 +423,20 @@ export default function App() {
             {template.sections.length === 1 ? "1 block" : `${template.sections.length} blocks`}
           </p>
         </div>
+        <div className="rail-defaults">
+          <p className="eyebrow">Default blocks</p>
+          {DEFAULT_BLOCKS.map((block) => (
+            <button
+              key={block.id}
+              type="button"
+              className="default-block"
+              onClick={() => addDefaultBlock(block.id)}
+            >
+              <strong>+ {block.title}</strong>
+              <em>{block.hint}</em>
+            </button>
+          ))}
+        </div>
         <div className={`rail-list ${draggingId ? "is-reordering" : ""}`} ref={listRef}>
           <p id="sec-drag-hint" className="sr-only">
             Drag to reorder
@@ -479,20 +495,6 @@ export default function App() {
             + Add block
           </button>
         </div>
-        <div className="rail-defaults">
-          <p className="eyebrow">Default blocks</p>
-          {DEFAULT_BLOCKS.map((block) => (
-            <button
-              key={block.id}
-              type="button"
-              className="default-block"
-              onClick={() => addDefaultBlock(block.id)}
-            >
-              <strong>+ {block.title}</strong>
-              <em>{block.hint}</em>
-            </button>
-          ))}
-        </div>
       </aside>
 
       <aside className="panel">
@@ -527,14 +529,26 @@ export default function App() {
                 </span>
               </label>
               {selected.helpEnabled ? (
-                <label className="stack-field">
-                  Tip text
-                  <textarea
-                    rows={3}
-                    value={selected.helpText}
-                    onChange={(e) => patchSection({ helpText: e.target.value })}
-                  />
-                </label>
+                <>
+                  <label className="stack-field">
+                    Tip text
+                    <textarea
+                      rows={3}
+                      value={selected.helpText}
+                      onChange={(e) => patchSection({ helpText: e.target.value })}
+                    />
+                  </label>
+                  <label className="stack-field">
+                    Help link
+                    <input
+                      type="url"
+                      inputMode="url"
+                      placeholder="https://"
+                      value={selected.helpLink ?? ""}
+                      onChange={(e) => patchSection({ helpLink: e.target.value })}
+                    />
+                  </label>
+                </>
               ) : null}
             </section>
 
@@ -567,16 +581,30 @@ export default function App() {
               {selected.repeatable || selected.slots.length > 0 || selected.fields.length > 0 ? (
                 <div className="nested part-list">
                   {selected.slots.some((s) => s.action === "photo") ? (
-                    <label className="setting-row">
-                      <input
-                        type="checkbox"
-                        checked={selected.exampleEnabled}
-                        onChange={(e) => patchSection({ exampleEnabled: e.target.checked })}
-                      />
-                      <span>
-                        <strong>Example photo</strong>
-                      </span>
-                    </label>
+                    <>
+                      <label className="setting-row">
+                        <input
+                          type="checkbox"
+                          checked={selected.exampleEnabled}
+                          onChange={(e) => patchSection({ exampleEnabled: e.target.checked })}
+                        />
+                        <span>
+                          <strong>Example photo</strong>
+                        </span>
+                      </label>
+                      {selected.exampleEnabled ? (
+                        <label className="stack-field">
+                          Example link
+                          <input
+                            type="url"
+                            inputMode="url"
+                            placeholder="https://"
+                            value={selected.exampleLink ?? ""}
+                            onChange={(e) => patchSection({ exampleLink: e.target.value })}
+                          />
+                        </label>
+                      ) : null}
+                    </>
                   ) : null}
 
                   {selected.repeatable ? (

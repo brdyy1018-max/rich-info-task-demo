@@ -1,6 +1,6 @@
 import type { Section, TaskTemplate } from "./types";
 
-function gallery(partial: Omit<Section, "layout" | "slots" | "fields" | "addLabel" | "groupLabel" | "numbered" | "exampleLabel" | "repeatable" | "unavailableButton" | "unavailableLabel"> & { exampleLabel?: string; unavailableLabel?: string }): Section {
+function gallery(partial: Omit<Section, "layout" | "slots" | "fields" | "addLabel" | "groupLabel" | "numbered" | "exampleLabel" | "repeatable" | "unavailableButton" | "unavailableLabel" | "helpLink" | "exampleLink"> & { exampleLabel?: string; unavailableLabel?: string; helpLink?: string; exampleLink?: string }): Section {
   return {
     layout: "gallery",
     slots: [],
@@ -11,16 +11,20 @@ function gallery(partial: Omit<Section, "layout" | "slots" | "fields" | "addLabe
     repeatable: false,
     unavailableButton: true,
     unavailableLabel: "Not available",
+    helpLink: "",
+    exampleLink: "",
     exampleLabel: partial.exampleLabel ?? "Ex.",
     ...partial,
   };
 }
 
 function slots(
-  partial: Omit<Section, "layout" | "fields" | "addLabel" | "groupLabel" | "numbered" | "exampleEnabled" | "exampleLabel" | "repeatable" | "unavailableButton" | "unavailableLabel"> & {
+  partial: Omit<Section, "layout" | "fields" | "addLabel" | "groupLabel" | "numbered" | "exampleEnabled" | "exampleLabel" | "repeatable" | "unavailableButton" | "unavailableLabel" | "helpLink" | "exampleLink"> & {
     fields?: Section["fields"];
     exampleEnabled?: boolean;
     unavailableLabel?: string;
+    helpLink?: string;
+    exampleLink?: string;
   },
 ): Section {
   const { fields, exampleEnabled, ...rest } = partial;
@@ -32,6 +36,8 @@ function slots(
     repeatable: false,
     unavailableButton: true,
     unavailableLabel: "Not available",
+    helpLink: "",
+    exampleLink: "",
     exampleEnabled: exampleEnabled ?? false,
     exampleLabel: "Ex.",
     ...rest,
@@ -40,8 +46,10 @@ function slots(
 }
 
 function groups(
-  partial: Omit<Section, "layout" | "slots" | "fields" | "exampleEnabled" | "exampleLabel" | "repeatable" | "unavailableButton" | "unavailableLabel" | "groupLabel"> & {
+  partial: Omit<Section, "layout" | "slots" | "fields" | "exampleEnabled" | "exampleLabel" | "repeatable" | "unavailableButton" | "unavailableLabel" | "groupLabel" | "helpLink" | "exampleLink"> & {
     groupLabel?: string;
+    helpLink?: string;
+    exampleLink?: string;
   },
 ): Section {
   return {
@@ -50,6 +58,8 @@ function groups(
     fields: [],
     exampleEnabled: false,
     exampleLabel: "Ex.",
+    helpLink: "",
+    exampleLink: "",
     repeatable: true,
     unavailableButton: true,
     unavailableLabel: "Not available",
@@ -59,7 +69,10 @@ function groups(
 }
 
 function form(
-  partial: Omit<Section, "layout" | "slots" | "addLabel" | "groupLabel" | "numbered" | "exampleEnabled" | "exampleLabel" | "repeatable" | "unavailableButton" | "unavailableLabel">,
+  partial: Omit<Section, "layout" | "slots" | "addLabel" | "groupLabel" | "numbered" | "exampleEnabled" | "exampleLabel" | "repeatable" | "unavailableButton" | "unavailableLabel" | "helpLink" | "exampleLink"> & {
+    helpLink?: string;
+    exampleLink?: string;
+  },
 ): Section {
   return {
     layout: "form",
@@ -72,6 +85,8 @@ function form(
     unavailableLabel: "Not available",
     exampleEnabled: false,
     exampleLabel: "Ex.",
+    helpLink: "",
+    exampleLink: "",
     ...partial,
   };
 }

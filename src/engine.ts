@@ -20,6 +20,19 @@ export function emptyValue(): SectionValue {
   };
 }
 
+export function sanitizeHref(raw: string | undefined): string {
+  const value = (raw ?? "").trim();
+  if (!value) return "";
+  const withProtocol = /^[a-zA-Z][a-zA-Z+\-.]*:/.test(value) ? value : `https://${value}`;
+  try {
+    const url = new URL(withProtocol);
+    if (url.protocol !== "http:" && url.protocol !== "https:") return "";
+    return url.href;
+  } catch {
+    return "";
+  }
+}
+
 export function unavailableTitle(section: Pick<Section, "unavailableLabel">): string {
   const label = section.unavailableLabel?.trim();
   return label || "Not available";

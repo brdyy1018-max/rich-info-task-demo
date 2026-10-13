@@ -11,6 +11,7 @@ import {
   mediaCap,
   unavailableReasonLabel,
   unavailableTitle,
+  sanitizeHref,
 } from "./engine";
 import { EXAMPLE_URL, makePlaceholder } from "./media";
 import {
@@ -110,6 +111,7 @@ export function Phone({ template, answers, selectedId, onSelect, onAnswers }: Ph
   const [skipSection, setSkipSection] = useState<Section | null>(null);
   const [skipReason, setSkipReason] = useState<UnavailableReasonId | "">("");
   const [skipNote, setSkipNote] = useState("");
+  const [guide, setGuide] = useState<{ title: string; url: string } | null>(null);
 
   const visible = template.sections.filter((s) => isSectionVisible(s, template));
   const ready = canSubmit(template, answers);
@@ -319,7 +321,9 @@ export function Phone({ template, answers, selectedId, onSelect, onAnswers }: Ph
                     aria-label="Help"
                     onClick={(ev) => {
                       ev.stopPropagation();
-                      setHelp(section);
+                      const href = sanitizeHref(section.helpLink);
+                      if (href) setGuide({ title: "Help", url: href });
+                      else setHelp(section);
                     }}
                   >
                     <IconInfo />
@@ -356,6 +360,7 @@ export function Phone({ template, answers, selectedId, onSelect, onAnswers }: Ph
                     onField={(key, text) =>
                       patchSection(section.id, (v) => ({ ...v, fields: { ...v.fields, [key]: text } }))
                     }
+                    onOpenLink={(title, url) => setGuide({ title, url })}
                     onMarkUnavailable={() => openSkipSheet(section)}
                     onAddGroup={() =>
                       patchSection(section.id, (v) => ({
@@ -436,6 +441,21 @@ export function Phone({ template, answers, selectedId, onSelect, onAnswers }: Ph
         </div>
       ) : null}
 
+      {guide ? (
+        <div className="sheet" onClick={() => setGuide(null)}>
+          <div className="sheet-card guide-card" onClick={(e) => e.stopPropagation()}>
+            <h3>{guide.title}</h3>
+            <iframe className="guide-frame" title={guide.title} src={guide.url} />
+            <a className="guide-open" href={guide.url} target="_blank" rel="noreferrer">
+              Open page
+            </a>
+            <button type="button" className="sheet-ok" onClick={() => setGuide(null)}>
+              Close
+            </button>
+          </div>
+        </div>
+      ) : null}
+
       {preview ? (
         <div className="sheet" onClick={() => setPreview(null)}>
           <div className="lightbox" onClick={(e) => e.stopPropagation()}>
@@ -461,6 +481,7 @@ type BodyProps = {
   onPick: (section: Section, kind: "photo" | "video", extra?: { slotKey?: string; groupId?: string }) => void;
   onRemove: (section: Section, itemId: string, extra?: { slotKey?: string; groupId?: string }) => void;
   onPreview: (item: MediaItem) => void;
+  onOpenLink: (title: string, url: string) => void;
   onField: (key: string, value: string) => void;
   onMarkUnavailable: () => void;
   onAddGroup: () => void;
@@ -588,13 +609,22 @@ function CheckField({
   );
 }
 
-function exampleThumb(section: Section) {
+function exampleThumb(section: Section, onOpenLink?: (title: string, url: string) => void) {
   if (!section.exampleEnabled) return null;
+  const href = sanitizeHref(section.exampleLink);
   return (
-    <div className="thumb example">
+    <button
+      type="button"
+      className={`thumb example${href ? " is-link" : ""}`}
+      aria-label={href ? "Open example page" : "Example photo"}
+      onClick={(e) => {
+        e.stopPropagation();
+        if (href) onOpenLink?.("Example", href);
+      }}
+    >
       <img src={EXAMPLE_URL} alt="Example" />
       <span className="ex-badge">{section.exampleLabel || "Ex."}</span>
-    </div>
+    </button>
   );
 }
 
@@ -614,7 +644,7 @@ function GalleryBody(props: BodyProps) {
               items={photos}
               cap={photoCap}
               kinds={["photo"]}
-              example={exampleThumb(section)}
+              example={exampleThumb(section, props.onOpenLink)}
               onCapture={(kind) => props.onCapture(section, kind)}
               onPick={(kind) => props.onPick(section, kind)}
               onPreview={props.onPreview}
@@ -622,7 +652,7 @@ function GalleryBody(props: BodyProps) {
             />
           ) : (
             <>
-              {exampleThumb(section)}
+              {exampleThumb(section, props.onOpenLink)}
               {photos[0] ? (
                 <Thumb
                   item={photos[0]}
@@ -641,7 +671,7 @@ function GalleryBody(props: BodyProps) {
             </>
           )
         ) : (
-          exampleThumb(section)
+          exampleThumb(section, props.onOpenLink)
         )}
         {showVideo ? (
           videos[0] ? (
@@ -668,7 +698,7 @@ function SlotsBody(props: BodyProps) {
   const { section, value } = props;
   return (
     <div className="shot-row wrap">
-      {exampleThumb(section)}
+      {exampleThumb(section, props.onOpenLink)}
       {section.slots.map((slot) => {
         const items = value?.slots[slot.key] ?? [];
         const kind = slot.action === "video" ? "video" : "photo";
