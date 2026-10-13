@@ -81,7 +81,7 @@ export const PRESETS: TaskTemplate[] = [
     id: "restaurant",
     name: "F&B Rich Info",
     title: "Rich info task",
-    blurb: "Storefront, interior, menus, hours and contact photos.",
+    blurb: "Storefront, interior, ranking materials, menus, hours and contact photos.",
     category: "fnb",
     sections: [
       slots({
@@ -114,6 +114,25 @@ export const PRESETS: TaskTemplate[] = [
         exampleEnabled: true,
         slots: [{ key: "shot", label: "Take Photo", action: "photo", maxItems: 8 }],
         bindField: "interior_photos",
+        visibleWhen: "always",
+      }),
+      slots({
+        id: "ranking_materials",
+        title: "Ranking materials",
+        description: "Place the ranking-list kit in store and photograph it.",
+        required: true,
+        available: true,
+        helpEnabled: true,
+        helpText: "Put the kit where customers can see it. Take one in-store placement shot and one close-up of the ranking content. Avoid faces.",
+        actions: ["photo"],
+        minItems: 1,
+        maxItems: 1,
+        exampleEnabled: true,
+        slots: [
+          { key: "placement", label: "In-store placement", action: "photo", maxItems: 1 },
+          { key: "closeup", label: "Ranking close-up", action: "photo", maxItems: 1 },
+        ],
+        bindField: "ranking_materials",
         visibleWhen: "always",
       }),
       groups({

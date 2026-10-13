@@ -19,6 +19,74 @@ function newId(prefix: string) {
   return `${prefix}_${Math.random().toString(36).slice(2, 7)}`;
 }
 
+function emptySection(partial: Partial<Section> & Pick<Section, "id" | "title">): Section {
+  return {
+    description: "",
+    required: true,
+    available: true,
+    helpEnabled: false,
+    helpText: "",
+    exampleEnabled: false,
+    exampleLabel: "Ex.",
+    layout: "labeled_slots",
+    actions: ["photo"],
+    minItems: 1,
+    maxItems: 1,
+    numbered: false,
+    repeatable: false,
+    slots: [],
+    addLabel: "+ Add group",
+    groupLabel: "Group",
+    fields: [],
+    bindField: partial.id,
+    visibleWhen: "always",
+    unavailableButton: true,
+    unavailableLabel: "Not available",
+    ...partial,
+  };
+}
+
+function makePhotoSlot(label: string): Section["slots"][number] {
+  return { key: newId("slot"), label, action: "photo", maxItems: 1 };
+}
+
+const DEFAULT_BLOCKS: {
+  id: string;
+  title: string;
+  hint: string;
+  build: () => Section;
+}[] = [
+  {
+    id: "storefront",
+    title: "Storefront",
+    hint: "Ex. + 2 photos",
+    build: () =>
+      emptySection({
+        id: newId("sec"),
+        title: "Storefront Capturing",
+        description: "Take storefront photos from outside.",
+        exampleEnabled: true,
+        slots: [makePhotoSlot("Take Photo"), makePhotoSlot("Take Photo")],
+        bindField: "storefront_photos",
+      }),
+  },
+  {
+    id: "environment",
+    title: "Environment",
+    hint: "Left · Center · Right",
+    build: () =>
+      emptySection({
+        id: newId("sec"),
+        title: "Environment Capturing",
+        description: "Enter the store and take interior photos.",
+        helpEnabled: true,
+        helpText: "Shoot left, center, and right. No faces, receipts, or payment QR codes.",
+        slots: [makePhotoSlot("Left View"), makePhotoSlot("Center View"), makePhotoSlot("Right View")],
+        bindField: "environment_photos",
+      }),
+  },
+];
+
 function newField(action: "text" | "select" | "check"): FieldDef {
   const key = newId("field");
   if (action === "select") {
@@ -149,36 +217,29 @@ export default function App() {
     setTemplate((prev) => ({ ...prev, ...partial }));
   }
 
-  function addSection() {
-    const id = `sec_${Date.now().toString().slice(-4)}`;
-    const section: Section = {
-      id,
-      title: "New block",
-      description: "",
-      required: false,
-      available: true,
-      helpEnabled: false,
-      helpText: "",
-      exampleEnabled: false,
-      exampleLabel: "Ex.",
-      layout: "form",
-      actions: [],
-      minItems: 1,
-      maxItems: 1,
-      numbered: false,
-      repeatable: false,
-      slots: [],
-      addLabel: "+ Add group",
-      groupLabel: "Group",
-      fields: [],
-      bindField: "custom_media",
-      visibleWhen: "always",
-      unavailableButton: true,
-      unavailableLabel: "Not available",
-    };
+  function insertSection(section: Section) {
     setTemplate((prev) => ({ ...prev, sections: [...prev.sections, section] }));
-    setAnswers((prev) => ({ ...prev, [id]: emptyValue() }));
-    setSelectedId(id);
+    setAnswers((prev) => ({ ...prev, [section.id]: emptyValue() }));
+    setSelectedId(section.id);
+  }
+
+  function addSection() {
+    insertSection(
+      emptySection({
+        id: newId("sec"),
+        title: "New block",
+        required: false,
+        layout: "form",
+        actions: [],
+        bindField: "custom_media",
+      }),
+    );
+  }
+
+  function addDefaultBlock(id: string) {
+    const preset = DEFAULT_BLOCKS.find((block) => block.id === id);
+    if (!preset) return;
+    insertSection(preset.build());
   }
 
   function removeSection(id: string) {
@@ -417,6 +478,20 @@ export default function App() {
           <button type="button" className="add-block" onClick={addSection}>
             + Add block
           </button>
+        </div>
+        <div className="rail-defaults">
+          <p className="eyebrow">Default blocks</p>
+          {DEFAULT_BLOCKS.map((block) => (
+            <button
+              key={block.id}
+              type="button"
+              className="default-block"
+              onClick={() => addDefaultBlock(block.id)}
+            >
+              <strong>+ {block.title}</strong>
+              <em>{block.hint}</em>
+            </button>
+          ))}
         </div>
       </aside>
 
