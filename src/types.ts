@@ -20,6 +20,11 @@ export type FieldDef = {
   placeholder?: string;
   options?: { value: string; label: string }[];
   required?: boolean;
+  followUpEnabled?: boolean;
+  followUpWhen?: string;
+  followUpLabel?: string;
+  followUpPlaceholder?: string;
+  followUpRequired?: boolean;
 };
 
 export const DEFAULT_CHECK_OPTIONS = [

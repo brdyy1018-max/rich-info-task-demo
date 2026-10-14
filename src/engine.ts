@@ -1,6 +1,7 @@
 import {
   UNAVAILABLE_REASONS,
   type Answers,
+  type FieldDef,
   type LayoutKind,
   type Section,
   type SectionValue,
@@ -94,12 +95,24 @@ export function deriveLayout(section: Section): LayoutKind {
   return "form";
 }
 
+export function followUpKey(field: Pick<FieldDef, "key">): string {
+  return `${field.key}__note`;
+}
+
+export function isFollowUpVisible(field: FieldDef, selected: string): boolean {
+  if (field.action !== "check" || !field.followUpEnabled) return false;
+  if (!selected.trim()) return false;
+  const when = (field.followUpWhen ?? "").trim();
+  return !when || when === selected;
+}
+
 export function emptyAnswers(sections: Section[]): Answers {
   const next: Answers = {};
   for (const section of sections) {
     next[section.id] = emptyValue();
     for (const field of section.fields) {
       next[section.id].fields[field.key] = "";
+      if (field.action === "check") next[section.id].fields[followUpKey(field)] = "";
     }
   }
   return next;
@@ -117,7 +130,14 @@ export function isSectionVisible(section: Section, template: TaskTemplate): bool
 function checkFieldsAnswered(section: Section, value: SectionValue): boolean {
   const checks = section.fields.filter((f) => f.action === "check");
   if (!checks.length) return true;
-  return checks.every((f) => (value.fields[f.key] ?? "").trim().length > 0);
+  return checks.every((f) => {
+    const selected = (value.fields[f.key] ?? "").trim();
+    if (!selected) return false;
+    if (isFollowUpVisible(f, selected) && f.followUpRequired) {
+      return (value.fields[followUpKey(f)] ?? "").trim().length > 0;
+    }
+    return true;
+  });
 }
 
 function galleryDone(section: Section, v: SectionValue): boolean {

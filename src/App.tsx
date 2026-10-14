@@ -1,6 +1,6 @@
 import { useRef, useState, type PointerEvent } from "react";
 import { Phone } from "./Phone";
-import { emptyAnswers, emptyValue } from "./engine";
+import { emptyAnswers, emptyValue, followUpKey } from "./engine";
 import { PRESETS } from "./presets";
 import { DEFAULT_CHECK_OPTIONS, type CaptureAction, type FieldDef, type Section, type TaskTemplate } from "./types";
 
@@ -97,9 +97,14 @@ function newField(action: "text" | "select" | "check"): FieldDef {
   if (action === "check") {
     return {
       key,
-      label: "Previous task completed",
+      label: "Prior Task Completion",
       action: "check",
       options: DEFAULT_CHECK_OPTIONS,
+      followUpEnabled: false,
+      followUpWhen: "no",
+      followUpLabel: "Additional information",
+      followUpPlaceholder: "Add details",
+      followUpRequired: true,
     };
   }
   return { key, label: "Value", action: "text", placeholder: "Type here" };
@@ -378,8 +383,18 @@ export default function App() {
       const cur = prev[selected.id] ?? emptyValue();
       return {
         ...prev,
-        [selected.id]: { ...cur, fields: { ...cur.fields, [field.key]: "" } },
+        [selected.id]: {
+          ...cur,
+          fields: { ...cur.fields, [field.key]: "", [followUpKey(field)]: "" },
+        },
       };
+    });
+  }
+
+  function patchField(idx: number, patch: Partial<FieldDef>) {
+    if (!selected) return;
+    patchSection({
+      fields: selected.fields.map((x, i) => (i === idx ? { ...x, ...patch } : x)),
     });
   }
 
@@ -730,34 +745,96 @@ export default function App() {
                           className="options-input"
                           value={optionsText(field)}
                           placeholder={field.action === "check" ? "Yes, No" : "Choices"}
-                          onChange={(e) => {
-                            const fields = selected.fields.map((x, i) =>
-                              i === idx
-                                ? {
-                                    ...x,
-                                    options:
-                                      field.action === "check"
-                                        ? parseChoiceOptions(e.target.value)
-                                        : parseOptions(e.target.value),
-                                  }
-                                : x,
-                            );
-                            patchSection({ fields });
-                          }}
+                          onChange={(e) =>
+                            patchField(idx, {
+                              options:
+                                field.action === "check"
+                                  ? parseChoiceOptions(e.target.value)
+                                  : parseOptions(e.target.value),
+                            })
+                          }
                         />
                       ) : (
                         <input
                           className="options-input"
                           value={field.placeholder ?? ""}
                           placeholder="Placeholder"
-                          onChange={(e) => {
-                            const fields = selected.fields.map((x, i) =>
-                              i === idx ? { ...x, placeholder: e.target.value } : x,
-                            );
-                            patchSection({ fields });
-                          }}
+                          onChange={(e) => patchField(idx, { placeholder: e.target.value })}
                         />
                       )}
+                      {field.action === "check" ? (
+                        <>
+                          <label className="setting-row is-tight">
+                            <input
+                              type="checkbox"
+                              checked={!!field.followUpEnabled}
+                              onChange={(e) => {
+                                const on = e.target.checked;
+                                if (!on) {
+                                  patchField(idx, { followUpEnabled: false });
+                                  return;
+                                }
+                                const opts = field.options?.length ? field.options : DEFAULT_CHECK_OPTIONS;
+                                const hasNo = opts.some((o) => o.value === "no");
+                                patchField(idx, {
+                                  followUpEnabled: true,
+                                  followUpWhen: field.followUpWhen || (hasNo ? "no" : opts[0]?.value ?? ""),
+                                  followUpLabel: field.followUpLabel || "Additional information",
+                                  followUpPlaceholder: field.followUpPlaceholder || "Add details",
+                                  followUpRequired: field.followUpRequired ?? true,
+                                });
+                              }}
+                            />
+                            <span>
+                              <strong>Note box</strong>
+                            </span>
+                          </label>
+                          {field.followUpEnabled ? (
+                            <div className="follow-up">
+                              <label className="stack-field">
+                                Show when
+                                <select
+                                  value={field.followUpWhen ?? ""}
+                                  onChange={(e) => patchField(idx, { followUpWhen: e.target.value })}
+                                >
+                                  <option value="">Any answer</option>
+                                  {(field.options?.length ? field.options : DEFAULT_CHECK_OPTIONS).map((opt) => (
+                                    <option key={opt.value} value={opt.value}>
+                                      {opt.label}
+                                    </option>
+                                  ))}
+                                </select>
+                              </label>
+                              <label className="stack-field">
+                                Label
+                                <input
+                                  value={field.followUpLabel ?? ""}
+                                  placeholder="Additional information"
+                                  onChange={(e) => patchField(idx, { followUpLabel: e.target.value })}
+                                />
+                              </label>
+                              <label className="stack-field">
+                                Placeholder
+                                <input
+                                  value={field.followUpPlaceholder ?? ""}
+                                  placeholder="Add details"
+                                  onChange={(e) => patchField(idx, { followUpPlaceholder: e.target.value })}
+                                />
+                              </label>
+                              <label className="setting-row is-tight">
+                                <input
+                                  type="checkbox"
+                                  checked={!!field.followUpRequired}
+                                  onChange={(e) => patchField(idx, { followUpRequired: e.target.checked })}
+                                />
+                                <span>
+                                  <strong>Note required</strong>
+                                </span>
+                              </label>
+                            </div>
+                          ) : null}
+                        </>
+                      ) : null}
                     </div>
                   ))}
                 </div>

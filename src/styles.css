@@ -274,6 +274,24 @@ textarea {
   flex: 0 0 auto;
 }
 
+.setting-row.is-tight {
+  padding: 4px 2px;
+}
+
+.setting-row.is-tight:hover {
+  background: transparent;
+}
+
+.follow-up {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 8px;
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+  background: #fff;
+}
+
 .setting-row span {
   display: flex;
   flex-direction: column;
@@ -1395,61 +1413,81 @@ button.thumb.is-link {
 .check-field {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
 }
 
 .check-prompt {
   margin: 0;
-  font-size: 13px;
-  font-weight: 700;
-  color: #111827;
+  font-size: 15px;
+  font-weight: 600;
+  color: #6b7280;
 }
 
 .check-options {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-}
-
-.check-options.is-pair {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  gap: 14px;
 }
 
 .check-option {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  gap: 10px;
-  min-height: 48px;
-  padding: 8px 12px;
-  border: 1.5px solid #e5e7eb;
-  border-radius: 12px;
-  background: #fff;
-  color: #111827;
-  font-size: 14px;
-  font-weight: 700;
+  gap: 12px;
+  min-height: 24px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #1a1a1a;
+  font-size: 16px;
+  font-weight: 500;
   cursor: pointer;
   text-align: left;
 }
 
-.check-option.is-on {
-  border-color: #86efac;
-  background: #f0fdf4;
-}
-
-.check-empty {
-  width: 18px;
-  height: 18px;
+.check-radio {
+  width: 22px;
+  height: 22px;
   flex: 0 0 auto;
   border: 2px solid #d1d5db;
   border-radius: 50%;
   box-sizing: border-box;
+  background: #fff;
+  position: relative;
 }
 
-.check-option svg {
-  flex: 0 0 auto;
+.check-option.is-on .check-radio {
+  border-color: var(--blue);
+}
+
+.check-option.is-on .check-radio::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  background: var(--blue);
+}
+
+.check-note {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 650;
+  color: #4b5563;
+}
+
+.check-note textarea {
+  width: 100%;
+  min-height: 72px;
+  height: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  background: #fff;
+  font-weight: 400;
+  color: var(--ink);
+  resize: vertical;
 }
 
 .form-stack .unavailable-mark {

@@ -6,6 +6,8 @@ import {
   slotCap,
   clearUnavailable,
   emptyValue,
+  followUpKey,
+  isFollowUpVisible,
   isSectionComplete,
   isSectionVisible,
   mediaCap,
@@ -535,7 +537,9 @@ function FormFields({ section, value, onField }: BodyProps) {
             key={field.key}
             field={field}
             value={value?.fields[field.key] ?? ""}
+            note={value?.fields[followUpKey(field)] ?? ""}
             onChange={(next) => onField(field.key, next)}
+            onNote={(next) => onField(followUpKey(field), next)}
           />
         ) : (
           <label key={field.key} className="field">
@@ -573,18 +577,22 @@ function FormFields({ section, value, onField }: BodyProps) {
 function CheckField({
   field,
   value,
+  note,
   onChange,
+  onNote,
 }: {
   field: FieldDef;
   value: string;
+  note: string;
   onChange: (next: string) => void;
+  onNote: (next: string) => void;
 }) {
   const options = field.options?.length ? field.options : DEFAULT_CHECK_OPTIONS;
-  const pair = options.length === 2;
+  const showNote = isFollowUpVisible(field, value);
   return (
     <div className="check-field">
       {field.label ? <p className="check-prompt">{field.label}</p> : null}
-      <div className={`check-options ${pair ? "is-pair" : ""}`} role="radiogroup" aria-label={field.label}>
+      <div className="check-options" role="radiogroup" aria-label={field.label}>
         {options.map((opt) => {
           const on = value === opt.value;
           return (
@@ -596,15 +604,30 @@ function CheckField({
               className={`check-option ${on ? "is-on" : ""}`}
               onClick={(e) => {
                 e.stopPropagation();
-                onChange(on ? "" : opt.value);
+                onChange(opt.value);
               }}
             >
-              {on ? <IconCheck /> : <span className="check-empty" />}
+              <span className="check-radio" />
               <span>{opt.label}</span>
             </button>
           );
         })}
       </div>
+      {showNote ? (
+        <label className="check-note">
+          <span>
+            {field.followUpLabel?.trim() || "Additional information"}
+            {field.followUpRequired ? <span className="required"> *</span> : null}
+          </span>
+          <textarea
+            rows={3}
+            value={note}
+            placeholder={field.followUpPlaceholder || "Add details"}
+            onClick={(e) => e.stopPropagation()}
+            onChange={(e) => onNote(e.target.value)}
+          />
+        </label>
+      ) : null}
     </div>
   );
 }
